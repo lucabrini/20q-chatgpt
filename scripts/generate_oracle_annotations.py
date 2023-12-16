@@ -1,3 +1,5 @@
+from dotenv import load_dotenv
+from os import environ
 from functools import wraps
 import os
 import re
@@ -15,7 +17,7 @@ def read_dialogues(path):
 
 #Call n.1 for the Oracle
 def external_oracle_call(target, question):
-    response = openai.ChatCompletion.create(
+    response = openai.chat.completions.create(
         model='gpt-3.5-turbo',
         messages=[{'role': "system",
                    'content': "You are playing an interactive game with the user, in which you are assigned one item from a list of candidates." \
@@ -32,7 +34,7 @@ def external_oracle_call(target, question):
 
 #Call n.2 for the Oracle, where it is forced to answer 'Yes' or 'No'
 def reinforce_oracle_call(target, question):
-    response = openai.ChatCompletion.create(
+    response = openai.chat.completions.create(
         model='gpt-3.5-turbo',
         messages=[{'role': "system",
                    'content': "You are playing an interactive game with the user, in which you are assigned one item from a list of candidates." \
@@ -48,7 +50,7 @@ def reinforce_oracle_call(target, question):
 
 #Call n.3 for the Oracle, where it is forced to answer 'Yes' or 'No' with a simplified prompt
 def reinforce2_oracle_call(target, question):
-    response = openai.ChatCompletion.create(
+    response = openai.chat.completions.create(
         model='gpt-3.5-turbo',
         messages=[{'role': "system", 'content': "You are playing an interactive game with the user," \
                                                 "you have to answer each question about your item only with 'yes' or 'no'." \
@@ -71,7 +73,7 @@ def retry_on_rate_limit(func):
                 time.sleep(10)
     return wrapper
 
-@retry_on_rate_limit
+
 def get_complete_answers(dialogues, annotation_file_path):
     #if an annotation file exists, start from the last annotation
     if os.path.exists(annotation_file_path):
@@ -177,6 +179,9 @@ def get_complete_answers(dialogues, annotation_file_path):
 
 
 if __name__ == "__main__":
+    
+    load_dotenv()
+    openai_api_key = environ.get("OPENAI_API_KEY")
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--game_set", type=str, default="8_mcrae",
@@ -186,7 +191,7 @@ if __name__ == "__main__":
     with open("config.json") as f:
         config = json.load(f)
 
-    openai.api_key = config["api_key"]
+    openai.api_key = environ.get("OPENAI_API_KEY")
 
     num_candidates = int(re.sub(r"_.*", "", args.game_set))
 

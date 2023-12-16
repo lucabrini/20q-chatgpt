@@ -28,13 +28,13 @@ def get_lists_of_candidates(constrast_sets):
 
 def openai_call(conversation, oracle=False):
     if oracle:
-        response = openai.ChatCompletion.create(
+        response = openai.chat.completions.create(
             model='gpt-3.5-turbo',
             messages=conversation,
             temperature=0.1,
         )
     else:
-        response = openai.ChatCompletion.create(
+        response = openai.chat.completions.create(
             model='gpt-3.5-turbo',
             messages=conversation,
         )
@@ -65,7 +65,7 @@ def get_prompts(candidates, target, stepwise=False):
                                                 f"\nThe item assigned to you is {target}."}])
     return questioner, oracle
 
-@retry_on_rate_limit
+
 def generate_dialogues_openai(target_list_candidates, game_set, num_candidates):
 
     if os.path.exists(f"../data/generation/{game_set}/dialogues.txt"):

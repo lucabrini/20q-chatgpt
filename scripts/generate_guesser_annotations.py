@@ -10,6 +10,9 @@ from functools import wraps
 from tqdm import tqdm
 from collections import defaultdict
 from analysis import Analysis
+from scripts.custom_model import CustomModel
+
+LLMModel =  CustomModel()
 
 def retry_on_rate_limit(func):
     @wraps(func)
@@ -23,7 +26,7 @@ def retry_on_rate_limit(func):
     return wrapper
 
 def openai_call(prompt):
-    response = openai.ChatCompletion.create(
+    response = openai.chat.completions.create(
         model='gpt-3.5-turbo',
         messages=prompt,
         temperature=0.1,
