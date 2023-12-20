@@ -14,8 +14,8 @@ from uncertainty.custom_model import LLModelWrapper
 
 csv_header = [
     "dialogue_id", # enumeration of games dialogues
-    "intra_dialogue_id" # question/answer index inside dialogue with id = dialogue_id
-    "target" # item assigned to user
+    "intra_dialogue_id", # question/answer index inside dialogue with id = dialogue_id
+    "target", # item assigned to user
     "question", # question made by the guesser
     "answer", # response from the user/oracle
     "question_confidence",
@@ -82,7 +82,7 @@ def get_prompts(candidates, target, stepwise=False):
                                                 "of candidates."\
                                                 "\nThe user will have to guess which one it is by asking yes/no questions, and "\
                                                 "you have to stricly respond to each question only with 'yes' or 'no'."\
-                                                "\nIf the user correctly guesses exactly your assigned item, respond with 'Yes! That's correct.'."\
+                                                "\nYou must respond with 'Yes! That's correct.' only if the user guesses exactly (letter by letter) your assigned item:  ."\
                                                 f"\nThe item assigned to you is {target}."}])
     return questioner, oracle
 
@@ -106,8 +106,8 @@ def generate_dialogues_openai(model: LLModelWrapper, target_list_candidates, gam
 
     stepwise = True if "stepwise" in game_set else False
 
-    for dialogue_id, value in target_list_candidates.items():
-        print(dialogue_id, value)
+    for dialogue_id, value in tqdm(target_list_candidates.items(), desc="Generating dialogues", unit="item"):
+        
         successful = False
         while not successful:
 
