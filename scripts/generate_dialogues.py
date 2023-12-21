@@ -47,7 +47,7 @@ def get_lists_of_candidates(constrast_sets):
     count_ += 1
   return list_and_target
 
-def openai_call(model: LLModelWrapper, conversation, oracle=False):
+def openai_call(conversation, oracle=False):
     if oracle:
         response = openai.chat.completions.create(
             model='gpt-3.5-turbo',
@@ -132,19 +132,23 @@ def generate_dialogues_openai(model: LLModelWrapper, target_list_candidates, gam
 
                 # Generating new question
                 time_start = time.time()
-                questioner_output, question_uncertainty_metrics = model.ask(
+                questioner_output = openai_call(questioner)['content']
+                print(questioner_output)
+                question_uncertainty_metrics = model.run_bsdetector(
                     question="This is the current dialogue: " + "\n".join(dialogue[2:]) ,
+                    original_answer=questioner_output,
                     message_history=[questioner[0]] # Task prompt
                 )
                 time_end = time.time()
                 question_time = time_end - time_start
+                
+                # Appending new question
                 questioner.append({'role': 'assistant', 'content': re.sub(r"\n\n*", " ", questioner_output)})
                 try:
                     processed_questioner_output = questioner_output.split("QUESTION:")[1].strip()
                 except IndexError:
                     processed_questioner_output = questioner_output
                 
-                # Appending new question
                 oracle.append({'role': 'user', 'content': processed_questioner_output})
                 generated_question = questioner[-1]['content'].strip()
                 
@@ -154,10 +158,12 @@ def generate_dialogues_openai(model: LLModelWrapper, target_list_candidates, gam
 
                 # Generating new question's answer
                 time_start = time.time()
-                oracle_output, answer_uncertainty_metrics = model.ask(
+                oracle_output = openai_call(oracle, oracle=True)['content']
+                print(oracle_output)
+                answer_uncertainty_metrics = model.run_bsdetector(
                     question="This is the current dialogue: " + "\n".join(dialogue[2:]) ,
+                    original_answer=oracle_output,
                     message_history=[oracle[0]], # Task prompt
-                    temperature=0.1,
                 )
                 time_end = time.time()
                 answer_time = time_end - time_start
